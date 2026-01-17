@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 星座算命 ✨</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #533483);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            padding: 20px;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 520px;
+            width: 100%;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            animation: slideUp 0.6s ease-out;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 语言切换按钮 */
+        .lang-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .lang-toggle:hover {
+            border-color: #8b5cf6;
+            color: #8b5cf6;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 10px;
+        }
+
+        .title h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .title p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .zodiac-section {
+            margin-bottom: 25px;
+        }
+
+        .zodiac-section > label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .zodiac-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .zodiac-option {
+            position: relative;
+        }
+
+        .zodiac-option input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .zodiac-option .zodiac-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 12px 8px;
+            border-radius: 14px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid #e5e7eb;
+            background: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .zodiac-option .zodiac-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease;
+        }
+
+        .zodiac-option .zodiac-btn:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+
+        .zodiac-option .zodiac-btn:hover {
+            border-color: #c4b5fd;
+            background: #faf5ff;
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.25);
+        }
+
+        .zodiac-option .zodiac-btn:hover .zodiac-icon {
+            animation: bounce 0.6s ease;
+            transform: scale(1.1);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1.1); }
+            30% { transform: translateY(-6px) scale(1.15); }
+            50% { transform: translateY(-3px) scale(1.12); }
+            70% { transform: translateY(-5px) scale(1.13); }
+        }
+
+        .zodiac-option input:checked + .zodiac-btn {
+            border-color: #8b5cf6;
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            color: white;
+            transform: scale(1.03);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .zodiac-option input:checked + .zodiac-btn:hover {
+            transform: scale(1.06);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+        }
+
+        .zodiac-option .zodiac-icon {
+            font-size: 26px;
+            transition: transform 0.3s ease;
+        }
+
+        .zodiac-option .zodiac-name {
+            font-weight: 500;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        }
+
+        .generate-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .generate-btn .btn-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 结果卡片 */
+        .result-card {
+            margin-top: 25px;
+            padding: 25px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #533483 100%);
+            color: white;
+            display: none;
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+
+        .result-card.show {
+            display: block;
+            animation: cardFadeIn 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes cardFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translateY(-5px) scale(1.02);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            animation: textFadeIn 0.8s ease 0.2s both;
+        }
+
+        .result-header .zodiac-icon-large {
+            font-size: 42px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+
+        .result-header .zodiac-info h3 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .result-header .zodiac-info .date-range {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        @keyframes textFadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .fortune-section {
+            margin-bottom: 18px;
+            animation: textFadeIn 0.8s ease 0.3s both;
+        }
+
+        .fortune-title {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .fortune-content {
+            font-size: 18px;
+            line-height: 1.6;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .luck-meter {
+            margin-bottom: 18px;
+            animation: textFadeIn 0.8s ease 0.4s both;
+        }
+
+        .luck-meter .meter-title {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .luck-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .luck-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .luck-label {
+            width: 60px;
+            font-size: 13px;
+        }
+
+        .luck-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .luck-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .luck-fill.love { background: linear-gradient(90deg, #ec4899, #f472b6); }
+        .luck-fill.career { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+        .luck-fill.wealth { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .luck-fill.health { background: linear-gradient(90deg, #10b981, #34d399); }
+
+        .luck-value {
+            width: 35px;
+            font-size: 13px;
+            text-align: right;
+        }
+
+        .suggestion-section {
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            backdrop-filter: blur(10px);
+            animation: textFadeIn 0.8s ease 0.5s both;
+        }
+
+        .suggestion-section .suggestion-title {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .suggestion-section .suggestion-text {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .lucky-items {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .lucky-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .error-message {
+            margin-top: 20px;
+            padding: 16px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 12px;
+            color: #dc2626;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+        }
+
+        .footer .powered-by {
+            margin-top: 6px;
+            font-size: 11px;
+            opacity: 0.6;
+        }
+
+        .free-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        /* 星星装饰 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        .star:nth-child(1) { width: 3px; height: 3px; top: 10%; left: 20%; animation-delay: 0s; }
+        .star:nth-child(2) { width: 2px; height: 2px; top: 20%; left: 80%; animation-delay: 0.5s; }
+        .star:nth-child(3) { width: 3px; height: 3px; top: 40%; left: 10%; animation-delay: 1s; }
+        .star:nth-child(4) { width: 2px; height: 2px; top: 60%; left: 90%; animation-delay: 1.5s; }
+        .star:nth-child(5) { width: 4px; height: 4px; top: 80%; left: 30%; animation-delay: 2s; }
+        .star:nth-child(6) { width: 2px; height: 2px; top: 15%; left: 50%; animation-delay: 0.3s; }
+        .star:nth-child(7) { width: 3px; height: 3px; top: 70%; left: 70%; animation-delay: 0.8s; }
+        .star:nth-child(8) { width: 2px; height: 2px; top: 30%; left: 40%; animation-delay: 1.3s; }
+        .star:nth-child(9) { width: 3px; height: 3px; top: 50%; left: 60%; animation-delay: 1.8s; }
+        .star:nth-child(10) { width: 2px; height: 2px; top: 90%; left: 15%; animation-delay: 2.3s; }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars">
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <button class="lang-toggle" id="langToggle" onclick="toggleLanguage()">
+                <span>🌐</span>
+                <span id="langText">EN</span>
+            </button>
+
+            <div class="title">
+                <h1 id="mainTitle">🔮 AI 星座算命</h1>
+                <p id="subtitle">选择你的星座，揭示今日运势</p>
+                <span class="free-badge" id="freeBadge">✨ 免费占卜 · 每日更新</span>
+            </div>
+
+            <div class="zodiac-section">
+                <label id="zodiacLabel">请选择你的星座</label>
+                <div class="zodiac-grid">
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="白羊座" data-en="Aries" data-icon="♈" data-date="3.21-4.19">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♈</span>
+                            <span class="zodiac-name" data-zh="白羊座" data-en="Aries">白羊座</span>
+                        </div>
+                    </label>
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="金牛座" data-en="Taurus" data-icon="♉" data-date="4.20-5.20">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♉</span>
+                            <span class="zodiac-name" data-zh="金牛座" data-en="Taurus">金牛座</span>
+                        </div>
+                    </label>
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="双子座" data-en="Gemini" data-icon="♊" data-date="5.21-6.21">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♊</span>
+                            <span class="zodiac-name" data-zh="双子座" data-en="Gemini">双子座</span>
+                        </div>
+                    </label>
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="巨蟹座" data-en="Cancer" data-icon="♋" data-date="6.22-7.22">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♋</span>
+                            <span class="zodiac-name" data-zh="巨蟹座" data-en="Cancer">巨蟹座</span>
+                        </div>
+                    </label>
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="狮子座" data-en="Leo" data-icon="♌" data-date="7.23-8.22">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♌</span>
+                            <span class="zodiac-name" data-zh="狮子座" data-en="Leo">狮子座</span>
+                        </div>
+                    </label>
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="处女座" data-en="Virgo" data-icon="♍" data-date="8.23-9.22">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♍</span>
+                            <span class="zodiac-name" data-zh="处女座" data-en="Virgo">处女座</span>
+                        </div>
+                    </label>
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="天秤座" data-en="Libra" data-icon="♎" data-date="9.23-10.23">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♎</span>
+                            <span class="zodiac-name" data-zh="天秤座" data-en="Libra">天秤座</span>
+                        </div>
+                    </label>
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="天蝎座" data-en="Scorpio" data-icon="♏" data-date="10.24-11.22">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♏</span>
+                            <span class="zodiac-name" data-zh="天蝎座" data-en="Scorpio">天蝎座</span>
+                        </div>
+                    </label>
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="射手座" data-en="Sagittarius" data-icon="♐" data-date="11.23-12.21">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♐</span>
+                            <span class="zodiac-name" data-zh="射手座" data-en="Sagittarius">射手座</span>
+                        </div>
+                    </label>
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="摩羯座" data-en="Capricorn" data-icon="♑" data-date="12.22-1.19">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♑</span>
+                            <span class="zodiac-name" data-zh="摩羯座" data-en="Capricorn">摩羯座</span>
+                        </div>
+                    </label>
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="水瓶座" data-en="Aquarius" data-icon="♒" data-date="1.20-2.18">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♒</span>
+                            <span class="zodiac-name" data-zh="水瓶座" data-en="Aquarius">水瓶座</span>
+                        </div>
+                    </label>
+                    <label class="zodiac-option">
+                        <input type="radio" name="zodiac" value="双鱼座" data-en="Pisces" data-icon="♓" data-date="2.19-3.20">
+                        <div class="zodiac-btn">
+                            <span class="zodiac-icon">♓</span>
+                            <span class="zodiac-name" data-zh="双鱼座" data-en="Pisces">双鱼座</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <button class="generate-btn" id="generateBtn" onclick="generateFortune()">
+                <span class="btn-text">
+                    <span>🔮</span>
+                    <span id="btnText">开始占卜</span>
+                </span>
+            </button>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <div class="result-card" id="resultCard">
+                <div class="result-header">
+                    <span class="zodiac-icon-large" id="resultIcon">♈</span>
+                    <div class="zodiac-info">
+                        <h3 id="resultZodiac">白羊座</h3>
+                        <span class="date-range" id="resultDate">3.21 - 4.19</span>
+                    </div>
+                </div>
+
+                <div class="fortune-section">
+                    <div class="fortune-title">
+                        <span>🌟</span>
+                        <span id="fortuneLabel">今日运势</span>
+                    </div>
+                    <div class="fortune-content" id="fortuneText"></div>
+                </div>
+
+                <div class="luck-meter">
+                    <div class="meter-title" id="meterTitle">运势指数</div>
+                    <div class="luck-bars">
+                        <div class="luck-item">
+                            <span class="luck-label" id="loveLabel">💕 爱情</span>
+                            <div class="luck-bar"><div class="luck-fill love" id="loveFill"></div></div>
+                            <span class="luck-value" id="loveValue">0%</span>
+                        </div>
+                        <div class="luck-item">
+                            <span class="luck-label" id="careerLabel">💼 事业</span>
+                            <div class="luck-bar"><div class="luck-fill career" id="careerFill"></div></div>
+                            <span class="luck-value" id="careerValue">0%</span>
+                        </div>
+                        <div class="luck-item">
+                            <span class="luck-label" id="wealthLabel">💰 财运</span>
+                            <div class="luck-bar"><div class="luck-fill wealth" id="wealthFill"></div></div>
+                            <span class="luck-value" id="wealthValue">0%</span>
+                        </div>
+                        <div class="luck-item">
+                            <span class="luck-label" id="healthLabel">💪 健康</span>
+                            <div class="luck-bar"><div class="luck-fill health" id="healthFill"></div></div>
+                            <span class="luck-value" id="healthValue">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="suggestion-section">
+                    <div class="suggestion-title">
+                        <span>💡</span>
+                        <span id="adviceLabel">今日建议</span>
+                    </div>
+                    <div class="suggestion-text" id="adviceText"></div>
+                    <div class="lucky-items">
+                        <div class="lucky-item">
+                            <span>🎨</span>
+                            <span id="luckyColorLabel">幸运色：</span>
+                            <span id="luckyColor"></span>
+                        </div>
+                        <div class="lucky-item">
+                            <span>🔢</span>
+                            <span id="luckyNumberLabel">幸运数：</span>
+                            <span id="luckyNumber"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div id="footerMain">Powered by Pollinations AI ❤️ 免费开源</div>
+            <div class="powered-by" id="footerSub">由 Claude AI 驱动</div>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'zh';
+
+        const translations = {
+            zh: {
+                title: '🔮 AI 星座算命',
+                subtitle: '选择你的星座，揭示今日运势',
+                freeBadge: '✨ 免费占卜 · 每日更新',
+                zodiacLabel: '请选择你的星座',
+                btnText: '开始占卜',
+                btnLoading: '正在占卜...',
+                fortuneLabel: '今日运势',
+                meterTitle: '运势指数',
+                loveLabel: '💕 爱情',
+                careerLabel: '💼 事业',
+                wealthLabel: '💰 财运',
+                healthLabel: '💪 健康',
+                adviceLabel: '今日建议',
+                luckyColorLabel: '幸运色：',
+                luckyNumberLabel: '幸运数：',
+                footerMain: 'Powered by Pollinations AI ❤️ 免费开源',
+                footerSub: '由 Claude AI 驱动',
+                langToggle: 'EN',
+                errorNoZodiac: '请先选择你的星座 ⭐',
+                errorFailed: '占卜失败，请稍后重试'
+            },
+            en: {
+                title: '🔮 AI Horoscope',
+                subtitle: 'Choose your zodiac sign, reveal today\'s fortune',
+                freeBadge: '✨ Free Reading · Daily Updates',
+                zodiacLabel: 'Select your zodiac sign',
+                btnText: 'Start Reading',
+                btnLoading: 'Reading...',
+                fortuneLabel: 'Today\'s Fortune',
+                meterTitle: 'Luck Index',
+                loveLabel: '💕 Love',
+                careerLabel: '💼 Career',
+                wealthLabel: '💰 Wealth',
+                healthLabel: '💪 Health',
+                adviceLabel: 'Today\'s Advice',
+                luckyColorLabel: 'Lucky Color: ',
+                luckyNumberLabel: 'Lucky Number: ',
+                footerMain: 'Powered by Pollinations AI ❤️ Free & Open Source',
+                footerSub: 'Powered by Claude AI',
+                langToggle: '中文',
+                errorNoZodiac: 'Please select your zodiac sign first ⭐',
+                errorFailed: 'Reading failed, please try again later'
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+            updateLanguage();
+            localStorage.setItem('preferred_lang', currentLang);
+        }
+
+        function updateLanguage() {
+            const t = translations[currentLang];
+            document.getElementById('mainTitle').textContent = t.title;
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('freeBadge').textContent = t.freeBadge;
+            document.getElementById('zodiacLabel').textContent = t.zodiacLabel;
+            document.getElementById('btnText').textContent = t.btnText;
+            document.getElementById('fortuneLabel').textContent = t.fortuneLabel;
+            document.getElementById('meterTitle').textContent = t.meterTitle;
+            document.getElementById('loveLabel').textContent = t.loveLabel;
+            document.getElementById('careerLabel').textContent = t.careerLabel;
+            document.getElementById('wealthLabel').textContent = t.wealthLabel;
+            document.getElementById('healthLabel').textContent = t.healthLabel;
+            document.getElementById('adviceLabel').textContent = t.adviceLabel;
+            document.getElementById('luckyColorLabel').textContent = t.luckyColorLabel;
+            document.getElementById('luckyNumberLabel').textContent = t.luckyNumberLabel;
+            document.getElementById('footerMain').textContent = t.footerMain;
+            document.getElementById('footerSub').textContent = t.footerSub;
+            document.getElementById('langText').textContent = t.langToggle;
+
+            document.querySelectorAll('.zodiac-name').forEach(el => {
+                el.textContent = el.dataset[currentLang];
+            });
+
+            document.title = currentLang === 'zh' ? 'AI 星座算命 ✨' : 'AI Horoscope ✨';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('preferred_lang');
+            if (savedLang) {
+                currentLang = savedLang;
+                updateLanguage();
+            }
+        });
+
+        async function generateFortune() {
+            const zodiac = document.querySelector('input[name="zodiac"]:checked');
+            const btn = document.getElementById('generateBtn');
+            const resultCard = document.getElementById('resultCard');
+            const errorMessage = document.getElementById('errorMessage');
+            const t = translations[currentLang];
+
+            resultCard.classList.remove('show');
+            errorMessage.classList.remove('show');
+
+            if (!zodiac) {
+                showError(t.errorNoZodiac);
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="btn-text"><span class="spinner"></span><span>${t.btnLoading}</span></span>`;
+
+            try {
+                const zodiacName = currentLang === 'zh' ? zodiac.value : zodiac.dataset.en;
+                const today = new Date().toLocaleDateString(currentLang === 'zh' ? 'zh-CN' : 'en-US');
+
+                const prompt = currentLang === 'zh'
+                    ? `今天是${today}，请为${zodiacName}生成今日星座运势。
+
+要求生成以下内容：
+1. 今日运势概述（50-80字，要有具体的运势描述）
+2. 爱情运势指数（60-100之间的整数）
+3. 事业运势指数（60-100之间的整数）
+4. 财运指数（60-100之间的整数）
+5. 健康指数（60-100之间的整数）
+6. 今日建议（30-50字，具体可行的建议）
+7. 幸运颜色（一个颜色）
+8. 幸运数字（1-99之间）
+
+请严格按照以下JSON格式回复：
+{
+  "fortune": "今日运势概述",
+  "love": 85,
+  "career": 78,
+  "wealth": 72,
+  "health": 90,
+  "advice": "今日建议",
+  "luckyColor": "紫色",
+  "luckyNumber": 7
+}`
+                    : `Today is ${today}, please generate today's horoscope for ${zodiacName}.
+
+Generate the following:
+1. Today's fortune overview (50-80 words, with specific fortune description)
+2. Love luck index (integer between 60-100)
+3. Career luck index (integer between 60-100)
+4. Wealth luck index (integer between 60-100)
+5. Health index (integer between 60-100)
+6. Today's advice (30-50 words, specific actionable advice)
+7. Lucky color (one color)
+8. Lucky number (between 1-99)
+
+Please respond strictly in the following JSON format:
+{
+  "fortune": "Today's fortune overview",
+  "love": 85,
+  "career": 78,
+  "wealth": 72,
+  "health": 90,
+  "advice": "Today's advice",
+  "luckyColor": "Purple",
+  "luckyNumber": 7
+}`;
+
+                const response = await fetch('https://text.pollinations.ai/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: [{ role: 'user', content: prompt }],
+                        model: 'openai',
+                        jsonMode: true
+                    })
+                });
+
+                if (!response.ok) throw new Error(t.errorFailed);
+
+                const content = await response.text();
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) throw new Error(t.errorFailed);
+
+                const result = JSON.parse(jsonMatch[0]);
+
+                // 更新结果卡片
+                document.getElementById('resultIcon').textContent = zodiac.dataset.icon;
+                document.getElementById('resultZodiac').textContent = currentLang === 'zh' ? zodiac.value : zodiac.dataset.en;
+                document.getElementById('resultDate').textContent = zodiac.dataset.date;
+                document.getElementById('fortuneText').textContent = result.fortune;
+                document.getElementById('adviceText').textContent = result.advice;
+                document.getElementById('luckyColor').textContent = result.luckyColor;
+                document.getElementById('luckyNumber').textContent = result.luckyNumber;
+
+                // 动画显示运势条
+                resultCard.classList.add('show');
+
+                setTimeout(() => {
+                    animateLuckBar('love', result.love);
+                    animateLuckBar('career', result.career);
+                    animateLuckBar('wealth', result.wealth);
+                    animateLuckBar('health', result.health);
+                }, 500);
+
+                setTimeout(() => {
+                    resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+
+            } catch (error) {
+                showError(error.message || t.errorFailed);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span class="btn-text"><span>🔮</span><span>${t.btnText}</span></span>`;
+            }
+        }
+
+        function animateLuckBar(type, value) {
+            const fill = document.getElementById(`${type}Fill`);
+            const valueEl = document.getElementById(`${type}Value`);
+
+            fill.style.width = '0%';
+            let current = 0;
+            const interval = setInterval(() => {
+                current += 2;
+                if (current >= value) {
+                    current = value;
+                    clearInterval(interval);
+                }
+                fill.style.width = current + '%';
+                valueEl.textContent = current + '%';
+            }, 20);
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                generateFortune();
+            }
+        });
+    </script>
+</body>
+</html>
